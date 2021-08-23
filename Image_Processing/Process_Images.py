@@ -32,6 +32,9 @@ def extractData() -> str:
     # find the file name for all images needed for extracting data
     image = os.listdir("Image_Processing/Images/")
 
+    if '.DS_Store' in image:
+        image.remove('.DS_Store')
+
     showMessage(image)
 
     # extract data for each image
@@ -54,6 +57,7 @@ def extractData() -> str:
         word = findWord(data)
         # find meaning in image
         # meaning = findMeaning(data)
+        pronunciation = findPronunciation(data, word)
 
         # determine if word is kanji or kotoba
         if len(word) == 1:
@@ -62,7 +66,9 @@ def extractData() -> str:
             dict = {"言葉": word}
 
         # showMessage(data)
-        showMessage(word)
+        # showMessage(word)
+        showMessage(pronunciation)
+
 
     return f"{day}_{current_time}"
 
@@ -119,6 +125,31 @@ def findMeaning(data: str) -> str:
     # lastly, remove new lines
     word = word.replace('\n', '')
     return word
+
+def findPronunciation(data: str, word: str) -> str:
+    """
+    This function finds the meaning in the data
+    """
+    # 2 cases
+    # if kotoba, then pronunciation will start with a ?
+    # if kanji, then multiple pronunciation starting from 〗
+    # for kotoba
+    # showMessage(len(word))
+
+    if len(word) != 3:
+        # find the indices for start and end
+        indStart = find(data, '?')
+        indEnd = find(data, '\n')
+        # we can assume the first index is the correct index for indStart
+        indStart = indStart[0]
+        # now find the closest index that is larger than indStart
+        possibleIndEnd = [ind for ind in indEnd if ind > indStart]
+        absolute_difference_function = lambda list_value: abs(list_value - indStart)
+        indEnd = min(possibleIndEnd, key=absolute_difference_function)
+
+    word = data[indStart+1:indEnd]
+    return word
+
 
 # class ImageProcess:
 #     """

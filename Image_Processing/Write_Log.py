@@ -22,9 +22,6 @@ def closeLog() -> None:
     info = "Time: {}, {}\n".format(current_time, "Write log at last, start to write it")
     log.write(info)
 
-    for i in LOG_CACH:
-        log.write(i)
-
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
 

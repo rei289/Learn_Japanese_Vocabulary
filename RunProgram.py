@@ -1,3 +1,7 @@
+"""
+This file deals with the running of both image processing and application programs
+We can make separate programs in the future to separate image processing and application when transferring to phone
+"""
 from Image_Processing.Process_Images import ImageProcess
 from Application.Japanese_Vocab import MyMainApp
 def runProgram():
@@ -18,8 +22,7 @@ def runApp():
     """
     This function runs the app
     """
-    # create instance
-    # app = MyMainApp
+    # run app
     MyMainApp().run()
 
 def runImageProcessing():

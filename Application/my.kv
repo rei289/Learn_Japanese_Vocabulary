@@ -1,0 +1,395 @@
+BoxLayout:
+    orientation:'vertical'
+
+    MDToolbar:
+        title: 'Japanese Vocabulary'
+
+    MDBottomNavigation:
+
+        FlashCard:
+            name: 'screen 1'
+
+        Table:
+            name: 'screen 2'
+
+        Input:
+            name: 'screen 3'
+
+        Fix:
+            name: 'screen 4'
+
+# First screen
+<FlashCard>:
+    name: 'screen 1'
+    text: 'flash card'
+    icon: 'card'
+
+    MDFloatLayout:
+        orientation: "vertical"
+
+        MDFloatLayout:
+            orientation: "vertical"
+            padding: 20, 20, 20, 20
+            spacing: 20
+
+            MDRectangleFlatIconButton:
+                text: "Refresh"
+                icon: "recycle"
+                icon_color: 0, 0.5, 1, 1
+                text_color: 0, 0.5, 1, 1
+                line_color: 0, 0.5, 1, 1
+                pos_hint: {"center_x": .1, "center_y": .9}
+                on_press: root.refresh_button()
+
+            MDRectangleFlatIconButton:
+                text: "Bookmark"
+                icon: "bookmark"
+                icon_color: 0, 0.5, 1, 1
+                text_color: 0, 0.5, 1, 1
+                line_color: 0, 0.5, 1, 1
+                pos_hint: {"center_x": .9, "center_y": .9}
+
+
+        MDLabel:
+            text: root.wd
+            halign: "center"
+            font_size: 140
+            pos_hint: {"center_x": .5, "center_y": .7}
+
+        MDLabel:
+            text: root.op
+            halign: "left"
+            font_size: 80
+            pos_hint: {"center_x": .75, "y": -0.1}
+
+
+        MDFloatLayout:
+            orientation: "horizontal"
+            padding: 20, 20, 20, 20
+            spacing: 20
+
+
+            MDRectangleFlatIconButton:
+                text: "Previous"
+                icon: "arrow-left-circle"
+                icon_color: 0, 0.5, 1, 1
+                text_color: 0, 0.5, 1, 1
+                line_color: 0, 0.5, 1, 1
+                on_press: root.previous_button()
+                pos_hint: {"center_x": .1,"center_y": .1}
+
+            MDRectangleFlatIconButton:
+                text: "Check"
+                icon: "check-circle"
+                icon_color: 0, 0.5, 1, 1
+                text_color: 0, 0.5, 1, 1
+                line_color: 0, 0.5, 1, 1
+                on_press: root.check_button()
+                pos_hint: {"center_x": .5,"center_y": .1}
+
+
+            MDRectangleFlatIconButton:
+                text: "Next"
+                icon: "arrow-right-circle"
+                icon_color: 0, 0.5, 1, 1
+                text_color: 0, 0.5, 1, 1
+                line_color: 0, 0.5, 1, 1
+                on_press: root.next_button()
+                pos_hint: {"center_x": .9,"center_y": .1}
+
+
+
+
+# Second screen
+<Table>:
+    name: 'screen 2'
+    text: 'Table'
+    icon: 'table'
+    on_tab_press: root.on_enter()
+
+
+# Third screen
+<Input>:
+    name: 'screen 3'
+    text: 'input'
+    icon: 'plus'
+
+
+    wd: wd
+    sy: sy
+    eg: eg
+    mn: mn
+    rb: rb
+    ip: ip
+
+    dd: dd
+
+
+    GridLayout:
+        cols: 1
+        size: root.width, root.height
+
+        GridLayout:
+            cols: 1
+            padding: 20, 20, 20, 20
+            spacing: 20
+            size_hint_y: 0.2
+
+            Button:
+                text: "Refresh"
+                on_press: root.refresh_button()
+
+        GridLayout:
+            cols:3
+
+            GridLayout:
+                rows: 6
+
+                MDLabel:
+                    text: "漢字/言葉:"
+                    font_name: 'Arial Unicode copy'
+                    font_size: 50
+                    halign: "center"
+
+                MDLabel:
+                    text:"漢字?:"
+                    font_name: 'Arial Unicode copy'
+                    font_size: 50
+                    halign: "center"
+
+                MDLabel:
+                    text:"読み方:"
+                    font_name: 'Arial Unicode copy'
+                    font_size: 50
+                    halign: "center"
+
+                MDLabel:
+                    text:"英語:"
+                    font_name: 'Arial Unicode copy'
+                    font_size: 50
+                    halign: "center"
+
+                MDLabel:
+                    text:"意味:"
+                    font_name: 'Arial Unicode copy'
+                    font_size: 50
+                    halign: "center"
+
+                MDLabel:
+                    text:"例文:"
+                    font_name: 'Arial Unicode copy'
+                    font_size: 50
+                    halign: "center"
+
+
+            GridLayout:
+                rows: 6
+
+                MDTextField:
+                    id: wd
+                    hint_text: "漢字/言葉"
+                    write_tab: False
+                    focus: True
+                    font_name: 'ipaexm.ttf'
+                    font_size: 30
+
+                MDDropDownItem:
+                    id: dd
+                    text: "漢字"
+                    on_release: root.open_dropdown()
+
+
+                MDTextFieldRect:
+                    id: sy
+                    write_tab: False
+                    hint_text: "読み方"
+                    focus: True
+                    font_name: 'ipaexm.ttf'
+                    font_size: 30
+
+                MDTextField:
+                    id: eg
+                    write_tab: False
+                    hint_text: "英語"
+                    focus: True
+                    font_name: 'ipaexm.ttf'
+                    font_size: 30
+
+                MDTextField:
+                    id: mn
+                    write_tab: False
+                    hint_text: "意味"
+                    focus: True
+                    font_name: 'ipaexm.ttf'
+                    font_size: 30
+
+                MDTextField:
+                    id: rb
+                    write_tab: False
+                    hint_text: "例文"
+                    focus: True
+                    font_name: 'ipaexm.ttf'
+                    font_size: 30
+
+# This was put in since inputting japanese characters does not work all the time in kivy
+            GridLayout:
+                cols: 1
+                Button:
+                    text: "Refresh"
+                    size_hint_y: 0.2
+                    on_press: root.refresh_input_button()
+
+                MDLabel:
+                    size_hint_y: 0.4
+                    halign: "center"
+                    text: "Use to write japanese characters"
+
+                TextInput:
+                    id: ip
+                    write_tab: False
+                    focus: True
+                    font_name: 'ipaexm.ttf'
+        GridLayout:
+            cols: 2
+            padding: 20, 20, 20, 20
+            spacing: 20
+            size_hint_y: 0.2
+
+
+            Button:
+                text:"Submit"
+                size_hint_x: 0.2
+                on_press: root.submit_button()
+
+            Button:
+                text:"Confirm"
+                size_hint_x: 0.2
+                on_press: root.confirm_button()
+
+# Fourth screen
+<Fix>:
+    name: 'screen 4'
+    text: 'fix'
+    icon: 'toolbox'
+
+    wd: wd
+    fx: fx
+    ip: ip
+
+    dd1: dd1
+    dd2: dd2
+
+    GridLayout:
+        cols: 1
+        size: root.width, root.height
+
+        GridLayout:
+            cols: 1
+            padding: 20, 20, 20, 20
+            spacing: 20
+            size_hint_y: 0.2
+
+            Button:
+                text: "Refresh"
+                on_press: root.refresh_button()
+
+        GridLayout:
+            cols: 2
+
+            GridLayout:
+                cols: 1
+
+                GridLayout:
+                    cols: 3
+                    MDLabel:
+                        text:"Enter character/word"
+                        font_name: 'Arial Unicode copy'
+                        font_size: 50
+                        halign: "center"
+
+                    MDTextField:
+                        id: wd
+                        hint_text: "漢字/言葉"
+                        focus: True
+                        font_name: 'ipaexm.ttf'
+
+                    GridLayout:
+                        cols: 1
+                        padding: 20, 20, 20, 20
+                        spacing: 20
+                        size_hint_y: 0.1
+
+                        MDDropDownItem:
+                            id: dd1
+                            text: "漢字/言葉"
+                            on_release: root.first_dropdown()
+
+                GridLayout:
+                    cols: 4
+                    padding: 20, 20, 20, 20
+                    spacing: 20
+                    size_hint_y: 0.4
+
+                    MDDropDownItem:
+                        id: dd2
+                        text: "直す部分"
+                        on_press: root.second_dropdown()
+
+                GridLayout:
+                    cols: 2
+
+                    MDLabel:
+                        text:"直し:"
+                        font_name: 'Arial Unicode copy'
+                        font_size: 50
+                        halign: "center"
+
+                    TextInput:
+                        id: fx
+                        write_tab: False
+                        focus: True
+                        font_name: 'ipaexm.ttf'
+
+# This was put in since inputting japanese characters does not work all the time in kivy
+            GridLayout:
+                cols: 1
+                size_hint_x: 0.5
+                padding: 20, 20, 20, 20
+                spacing: 20
+
+                Button:
+                    text: "Refresh"
+                    size_hint_y: 0.2
+                    on_press: root.refresh_input_button()
+
+                MDLabel:
+                    size_hint_y: 0.4
+                    halign: "center"
+                    text: "Use to write japanese characters"
+
+                MDTextFieldRect:
+                    id: ip
+                    write_tab: False
+                    hint_text: "Japanese characters"
+                    focus: True
+                    font_name: 'ipaexm.ttf'
+                    font_size: 30
+
+
+
+        GridLayout:
+            cols: 2
+            padding: 20, 20, 20, 20
+            spacing: 20
+            size_hint_y: 0.2
+
+
+            Button:
+                text:"Submit"
+                size_hint_x: 0.2
+                on_press: root.submit_button()
+
+            Button:
+                text:"Confirm"
+                size_hint_x: 0.2
+                on_press: root.confirm_button()

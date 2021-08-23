@@ -20,7 +20,7 @@ class ImageProcess:
         This function extracts the data from images
         """
         # find the file name for all images needed for extracting data
-        img = os.listdir("Images/")
+        img = os.listdir("Image_Processing/Images/")
 
         # extract data for each image
         for i in range(len(img)):

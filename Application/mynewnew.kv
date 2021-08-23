@@ -1,0 +1,37 @@
+<MainScreen>:
+    BoxLayout:
+        size: root.size
+        orientation: "vertical"
+
+        Label:
+            text: "日本語"
+
+        RelativeLayout:
+            TextInputIME:
+                id: textinput
+                composition_window: cmp_window
+                pos: root.pos
+                size: root.size
+            CompositionLabel:
+                id: cmp_window
+                textinput: textinput
+                x: textinput.cursor_pos[0]
+                y: textinput.cursor_pos[1] - self.height
+
+        Button:
+            text: "ボタン"
+
+
+<CompositionLabel>:
+    size_hint_x: None
+    size_hint_y: None
+    width: self.font_size * (len(self.text)-7)
+    height: self.font_size
+    color: 0,0,0,1
+    markup: True
+    canvas.before:
+        Color:
+            rgba: 1,1,1,len(self.text)-7
+        Rectangle:
+            pos: self.pos
+            size: self.size

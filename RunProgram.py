@@ -18,7 +18,9 @@ def runApp():
     """
     This function runs the app
     """
-    MyMainApp.run()
+    # create instance
+    # app = MyMainApp
+    MyMainApp().run()
 
 def runImageProcessing():
     """

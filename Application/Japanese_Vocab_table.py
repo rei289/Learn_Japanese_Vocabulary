@@ -22,7 +22,7 @@ from kivy.metrics import dp
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 
-from TextInputIME import TextInputIME
+# from TextInputIME import TextInputIME
 
 from kivy.core.text import LabelBase, DEFAULT_FONT
 

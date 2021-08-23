@@ -32,6 +32,8 @@ def extractData() -> str:
     # find the file name for all images needed for extracting data
     image = os.listdir("Image_Processing/Images/")
 
+    showMessage(image)
+
     # extract data for each image
     for i in range(len(image)):
         # find the image folder

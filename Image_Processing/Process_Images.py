@@ -74,9 +74,24 @@ def findWord(data: str) -> str:
     """
     This function finds the word in the data
     """
-    # find the 【 and 】string
-    indStart = find(data,'【')
-    indEnd = find(data,'】')
+    # find the 【 and 】string　or 〖 and 〗string
+    # either one will work
+    # if 【 or 】string doesn't exist in the image, try the 〖 and 〗string
+    if data.find('【') == -1 or data.find('】') == -1:
+        indStart = find(data, '〖 ')
+        indEnd = find(data, '〗')
+    else:
+        indStart = find(data,'【')
+        indEnd = find(data,'】')
+
+    # if both 【 and 】string　and〖 and 〗string doesn't exist, means image not properly take
+    if len(indStart) == 0 or len(indEnd) == 0:
+        raise RuntimeError("Image not properly taken")
+
+    # # if the length of indStart and indEnd is more than 1, that most likely means it is a kanji
+    # # we will compare the strings
+    # if len(indStart) == len(indEnd) and len(indStart) > 1:
+    #     words = [data[indStart[i]+1:indEnd[i]]for i in range(len(indStart))]
 
     # slice that string
     word = data[int(indStart[0]+1):indEnd[0]]

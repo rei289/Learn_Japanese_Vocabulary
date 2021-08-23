@@ -1,0 +1,11 @@
+.DS_Store
+.idea/
+venv/
+Application/__pycache__/Japanese_Vocab.cpython-38.pyc
+Application/__pycache__/Japanese_Vocab_fix.cpython-38.pyc
+Application/__pycache__/Japanese_Vocab_flashcard.cpython-38.pyc
+Application/__pycache__/Japanese_Vocab_input.cpython-38.pyc
+Application/__pycache__/Japanese_Vocab_table.cpython-38.pyc
+Application/__pycache__/TextInputIME.cpython-38.pyc
+Image_Processing/__pycache__/
+

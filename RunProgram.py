@@ -31,7 +31,7 @@ def runImageProcessing():
     """
     # initialize instance
     image = ImageProcess
-    ImageProcess.extractData(image)
+    extract = ImageProcess.extractData(image)
 
 if __name__ == '__main__':
     runProgram()

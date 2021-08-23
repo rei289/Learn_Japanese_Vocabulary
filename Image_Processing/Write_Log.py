@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Dict, IO, List
 import time
 
-def _openLog(log_name) -> None:
+def openLog(log_name) -> None:
     """
     This function open a log file
     """

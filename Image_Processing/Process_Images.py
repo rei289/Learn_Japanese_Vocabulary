@@ -60,10 +60,10 @@ def extractData() -> str:
         pronunciation = findPronunciation(data, word)
 
         # determine if word is kanji or kotoba
-        if len(word) == 1:
-            dict = {"漢字": word}
+        if len(word) == 3:
+            dict = {"漢字": word, "読み方": pronunciation}
         else:
-            dict = {"言葉": word}
+            dict = {"言葉": word, "読み方": pronunciation}
 
         # showMessage(data)
         # showMessage(word)
@@ -120,11 +120,11 @@ def findMeaning(data: str) -> str:
         indEnd = data.find('】')
 
     # slice that string
-    word = data[int(indStart+1):indEnd]
+    meaning = data[int(indStart+1):indEnd]
 
     # lastly, remove new lines
-    word = word.replace('\n', '')
-    return word
+    meaning = meaning.replace('\n', '')
+    return meaning
 
 def findPronunciation(data: str, word: str) -> str:
     """
@@ -137,18 +137,53 @@ def findPronunciation(data: str, word: str) -> str:
     # showMessage(len(word))
 
     if len(word) != 3:
-        # find the indices for start and end
-        indStart = find(data, '?')
-        indEnd = find(data, '\n')
-        # we can assume the first index is the correct index for indStart
-        indStart = indStart[0]
-        # now find the closest index that is larger than indStart
-        possibleIndEnd = [ind for ind in indEnd if ind > indStart]
-        absolute_difference_function = lambda list_value: abs(list_value - indStart)
-        indEnd = min(possibleIndEnd, key=absolute_difference_function)
+        string = '?'
 
-    word = data[indStart+1:indEnd]
-    return word
+    else:
+        # locate 〗
+        start = find(data, '】')
+        # get the first index
+        start = min(start)
+
+        # now check to see if string after 〗is (
+        if data[start+1] == "(":
+            string = ")"
+        else:
+            string = "】"
+
+
+    # find the indices for start and end
+    indStart = find(data, string)
+    indEnd = find(data, '\n')
+    # we can assume the first index is the correct index for indStart
+    indStart = indStart[0]
+    # now find the closest index that is larger than indStart
+    possibleIndEnd = [ind for ind in indEnd if ind > indStart]
+    absolute_difference_function = lambda list_value: abs(list_value - indStart)
+    indEnd = min(possibleIndEnd, key=absolute_difference_function)
+
+    # get pronunciation
+    pronunciation = data[indStart+1:indEnd]
+
+    # if kanji, we need to separate into 2 sections
+    if len(word) == 3:
+        # for onyomi
+        regex = {"from": ord(u"\u30a0"), "to": ord(u"\u30ff")}
+        kata = [regex["from"] <= ord(pronunciation[i]) <= regex["to"] for i in range(len(pronunciation))]
+        # find all the places that are listed as TRUE
+        indOn = find(kata, True)
+        # now find min and max of the indices
+        indStart = min(indOn)
+        indEnd = max(indOn)
+
+
+
+    return pronunciation
+
+def findEnglish(data: str, word: str) -> str:
+    """
+    This function finds the english translation in the data
+    """
 
 
 # class ImageProcess:

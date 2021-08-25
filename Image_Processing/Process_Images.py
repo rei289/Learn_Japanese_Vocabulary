@@ -35,8 +35,6 @@ def extractData() -> str:
     if '.DS_Store' in image:
         image.remove('.DS_Store')
 
-    showMessage(image)
-
     # extract data for each image
     for i in range(len(image)):
         # find the image folder
@@ -56,7 +54,7 @@ def extractData() -> str:
         # find the word in image
         word = findWord(data)
         # find meaning in image
-        # meaning = findMeaning(data)
+        meaning = findMeaning(data)
         pronunciation = findPronunciation(data, word)
 
         # determine if word is kanji or kotoba
@@ -66,8 +64,9 @@ def extractData() -> str:
             dict = {"言葉": word, "読み方": pronunciation}
 
         # showMessage(data)
-        # showMessage(word)
+        showMessage(word)
         showMessage(pronunciation)
+        showMessage(meaning)
 
 
     return f"{day}_{current_time}"
@@ -77,6 +76,12 @@ def find(string:str, char:str) -> List[int]:
     This function finds all targeted characters in a string and returns a list of indexes
     """
     return [i for i, ltr in enumerate(string) if ltr == char]
+
+def lines(string:str) -> List[int]:
+    """
+    This function finds start and end index for each line 
+    """
+    pass
 
 def findWord(data: str) -> str:
     """
@@ -96,13 +101,11 @@ def findWord(data: str) -> str:
     if len(indStart) == 0 or len(indEnd) == 0:
         raise RuntimeError("Image not properly taken")
 
-    # # if the length of indStart and indEnd is more than 1, that most likely means it is a kanji
-    # # we will compare the strings
-    # if len(indStart) == len(indEnd) and len(indStart) > 1:
-    #     words = [data[indStart[i]+1:indEnd[i]]for i in range(len(indStart))]
-
     # slice that string
     word = data[int(indStart[0]+1):indEnd[0]]
+
+    # lastly, get rid of spaces
+    word = word.replace(" ", "")
     return word
 
 def findMeaning(data: str) -> str:
@@ -113,7 +116,8 @@ def findMeaning(data: str) -> str:
     # if 》string exists, then meaning is string after this string
     if data.find('》') != -1:
         indStart = data.find('》')
-        indEnd = data.find('「')
+        indEnd = max(find(data, '。'))
+        # if 「 does not exist,
     # if 》string does not exist, then meaning is string after 】
     else:
         indStart = data.find('】')
@@ -122,8 +126,11 @@ def findMeaning(data: str) -> str:
     # slice that string
     meaning = data[int(indStart+1):indEnd]
 
-    # lastly, remove new lines
+    # remove new lines
     meaning = meaning.replace('\n', '')
+
+    # lastly, get rid of spaces
+    meaning = meaning.replace(" ", "")
     return meaning
 
 def findPronunciation(data: str, word: str) -> str:
@@ -136,7 +143,7 @@ def findPronunciation(data: str, word: str) -> str:
     # for kotoba
     # showMessage(len(word))
 
-    if len(word) != 3:
+    if len(word) != 1:
         string = '?'
 
     else:
@@ -165,9 +172,13 @@ def findPronunciation(data: str, word: str) -> str:
     # get pronunciation
     pronunciation = data[indStart+1:indEnd]
 
+    # lastly, get rid of spaces
+    pronunciation = pronunciation.replace(" ", "")
+
     # if kanji, we need to separate into 2 sections
-    if len(word) == 3:
+    if len(word) == 1:
         # for onyomi
+        # find all strings that are katakana
         regex = {"from": ord(u"\u30a0"), "to": ord(u"\u30ff")}
         kata = [regex["from"] <= ord(pronunciation[i]) <= regex["to"] for i in range(len(pronunciation))]
         # find all the places that are listed as TRUE
@@ -175,6 +186,23 @@ def findPronunciation(data: str, word: str) -> str:
         # now find min and max of the indices
         indStart = min(indOn)
         indEnd = max(indOn)
+        onyomi = pronunciation[indStart:indEnd+1]
+
+        # for kunyomi
+        # find all strings that are hiragana
+        regex = {'from': ord(u'\u3040'), 'to': ord(u'\u309f')}
+        hira = [regex["from"] <= ord(pronunciation[i]) <= regex["to"] for i in range(len(pronunciation))]
+        # find all the places that are listed as TRUE
+        indHi = find(hira, True)
+        # now find min and max of the indices
+        indStart = min(indHi)
+        indEnd = max(indHi)
+        kunyomi = pronunciation[indStart:indEnd+1]
+
+        # lastly combine the 2 strings
+        pronunciation = f"[音] {onyomi}\n[訓] {kunyomi}"
+
+
 
 
 

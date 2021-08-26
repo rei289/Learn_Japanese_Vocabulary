@@ -4,15 +4,14 @@ This file deals with processing the images into data which can be added to the c
 from PIL import Image
 from datetime import datetime
 from Image_Processing.Write_Log import openLog, closeLog, writeLog, showMessage
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Dict
 import pytesseract
 import os
 from langdetect import detect
 
-def extractData() -> str:
+def writeFile():
     """
-    This function extracts the data from images
-    returns the name for data file
+    This function writes the extracted data from images into a file
     """
     # first create a folder containing data
     # get time
@@ -21,14 +20,17 @@ def extractData() -> str:
     current_time = now.strftime("%H_%M_%S")
 
     # generate data folder for save result
-    if not os.path.exists("Data"):
-        os.mkdir("Data")
+    if not os.path.exists("Image_Processing/Data"):
+        os.mkdir("Image_Processing/Data")
 
     global picFolder
-    picFolder = "Data/{}_{}".format(day, current_time)
+    picFolder = "Image_Processing/Data/{}_{}".format(day, current_time)
 
     if not os.path.exists(picFolder):
         os.mkdir(picFolder)
+
+    # create a text file
+    openLog(f'Image_Processing/Data/{day}_{current_time}/Data.txt')
 
     # find the file name for all images needed for extracting data
     image = os.listdir("Image_Processing/Images/")
@@ -42,40 +44,57 @@ def extractData() -> str:
         # find the image folder
         image_path = f"Image_Processing/Images/{image[i]}"
 
-        # Opening the image & storing it in an image object
-        img = Image.open(image_path)
+        # extract data
+        data = extractData(image_path)
 
-        # Passing the image object to image_to_string() function
-        # This function will extract the text from the image
-        text = pytesseract.image_to_string(img, lang='jpn')
-
-        # Displaying the extracted text
-        data = text[:-1]
-
-        # organize the data into a dictionary
-        # find the word in image
-        word = findWord(data)
-        # find meaning in image
-        meaning = findMeaning(data)
-        pronunciation = findPronunciation(data, word)
-        english = findEnglish(data, word)
-
-        # determine if word is kanji or kotoba
-        if len(word) == 1:
-            dict = {"漢字": word, "読み方": pronunciation}
-        else:
-            dict = {"言葉": word, "読み方": pronunciation}
-
-        # showMessage(data)
-        showMessage(word)
-        showMessage(pronunciation)
-        showMessage(meaning)
-        showMessage(english)
-
-        showMessage('')
+        # write data into file
+        writeLog(data)
 
 
-    return f"{day}_{current_time}"
+def extractData(image_path: str) -> Dict[str, str]:
+    """
+    This function extracts the data from images
+    returns the name for data file and dictionary containing all the information necessary
+    """
+    # Opening the image & storing it in an image object
+    img = Image.open(image_path)
+
+    # Passing the image object to image_to_string() function
+    # This function will extract the text from the image
+    text = pytesseract.image_to_string(img, lang='jpn')
+
+    # Displaying the extracted text
+    data = text[:-1]
+
+    # organize the data into a dictionary
+    # find the word in image
+    word = findWord(data)
+    # find meaning in image
+    meaning = findMeaning(data)
+    # find pronunciation in image
+    pronunciation = findPronunciation(data, word)
+    # find english translation in image
+    english = findEnglish(data)
+    # find example in image
+    example = findExample(data, word)
+
+    # determine if word is kanji or kotoba, then append it to dictionary
+    if len(word) == 1:
+        dict = {"漢字": word, "読み方 (音|訓)": pronunciation, "英語": english, "意味": meaning, "例文": example}
+    else:
+        dict = {"言葉": word, "読み方 (音|訓)": pronunciation, "英語": english, "意味": meaning, "例文": example}
+
+    # showMessage(data)
+    # showMessage(word)
+    # showMessage(pronunciation)
+    # showMessage(meaning)
+    # showMessage(english)
+    # showMessage(example)
+
+    # showMessage('')
+
+    # finally, return the information
+    return dict
 
 def find(string:str, char:str) -> List[int]:
     """
@@ -264,6 +283,8 @@ def findPronunciation(data: str, word: str) -> str:
         indStart = min(indOn)
         indEnd = max(indOn)
         onyomi = pronunciation[indStart:indEnd+1]
+        # lastly, replace any ・ with ,
+        onyomi.replace('・', '、')
 
         # for kunyomi
         # find all strings that are hiragana
@@ -275,6 +296,8 @@ def findPronunciation(data: str, word: str) -> str:
         indStart = min(indHi)
         indEnd = max(indHi)
         kunyomi = pronunciation[indStart:indEnd+1]
+        # lastly, replace any ・ with ,
+        kunyomi.replace('・', '、')
 
         # lastly combine the 2 strings
         pronunciation = f"[音] {onyomi}\n[訓] {kunyomi}"
@@ -282,7 +305,7 @@ def findPronunciation(data: str, word: str) -> str:
 
     return pronunciation
 
-def findEnglish(data: str, word: str) -> str:
+def findEnglish(data: str) -> str:
     """
     This function finds the english translation in the data
     """
@@ -325,7 +348,31 @@ def findEnglish(data: str, word: str) -> str:
 
     return english
 
+def findExample(data: str, word: str) -> str:
+    """
+    This function finds the examples in the data
+    """
+    # find strings with 「 and 」
+    start = find(data, '「')
+    end = find(data, '」')
 
+    # initialize a list that contains each example
+    example_list = []
+    for i in range(len(start)):
+        example = data[int(start[i]+1):end[i]]
+        # remove spacing
+        example = example.replace(' ', '')
+        # remove new lines
+        example = example.replace('\n', '')
+        if '一' in example or word in example:
+            example_list.append(example)
+
+
+    # finally, return the first element in list
+    if len(example_list) > 0:
+        return example_list[0]
+    else:
+        return ''
 
 
 

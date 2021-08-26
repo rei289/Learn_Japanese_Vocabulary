@@ -3,7 +3,7 @@ This file deals with the running of both image processing and application progra
 We can make separate programs in the future to separate image processing and application when transferring to phone
 """
 # from Image_Processing.Process_Images import ImageProcess
-from Image_Processing.Process_Images import extractData
+from Image_Processing.Process_Images import writeFile
 from Application.Japanese_Vocab import MyMainApp
 def runProgram():
     """
@@ -31,7 +31,7 @@ def runImageProcessing():
     This function runs the image processing
     """
     # initialize instance
-    extract = extractData()
+    extract = writeFile()
     # image = ImageProcess
     # extract = ImageProcess.extractData(image)
 

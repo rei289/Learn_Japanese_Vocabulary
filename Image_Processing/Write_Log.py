@@ -40,16 +40,16 @@ def writeLog(message) -> None:
     """
     This function write the message into log
     """
-    now = datetime.now()
-    current_time = now.strftime("%H:%M:%S")
+    # now = datetime.now()
+    # current_time = now.strftime("%H:%M:%S")
+    #
+    # info = "Time: {}, {}\n".format(current_time, message)
 
-    info = "Time: {}, {}\n".format(current_time, message)
+    # replace , with new line
+    message = str(message).replace(',', ', \n')
+    info = f"{message} \n \n"
 
-    # depends on the requirement, write log now or later
-    # if INDICATOR[2]:
-    #     log.write(info)
-    # else:
-    #     LOG_CACH.append(info)
+
     log.write(info)
         
 def showMessage(message: str) -> None:

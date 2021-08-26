@@ -32,6 +32,7 @@ def extractData() -> str:
     # find the file name for all images needed for extracting data
     image = os.listdir("Image_Processing/Images/")
 
+    # remove file called DS_Store
     if '.DS_Store' in image:
         image.remove('.DS_Store')
 
@@ -68,6 +69,8 @@ def extractData() -> str:
         showMessage(pronunciation)
         showMessage(meaning)
 
+        showMessage('')
+
 
     return f"{day}_{current_time}"
 
@@ -81,7 +84,8 @@ def lines(string:str) -> List[int]:
     """
     This function finds start and end index for each line 
     """
-    pass
+    # find all index with new lines
+    return find(string, '\n')
 
 def findWord(data: str) -> str:
     """
@@ -112,19 +116,101 @@ def findMeaning(data: str) -> str:
     """
     This function finds the meaning in the data
     """
+    # # remove all spaces
+    # data.replace(' ', '')
+
     # two cases
     # if 》string exists, then meaning is string after this string
     if data.find('》') != -1:
-        indStart = data.find('》')
-        indEnd = max(find(data, '。'))
-        # if 「 does not exist,
+        # find the line after 》
+        symbol = find(data, '》')
+        # initialize line
+        line = [0]
+        # find index of lines
+        lin = lines(data)
+
+        for i in lin:
+            line.append(i)
+
+        # subtract all numbers by 1
+        line = [int(num - 1) for num in line]
+
+        # find which line symbol is in
+        # to do this, we will create a nested list, which will contain a tuple with starting and ending index
+        lines_index = [(line[i] + 1, line[i + 1]) for i in range(len(line) - 1)]
+
+        # only keep the indices that is below the symbol
+        symbol_lines_index = [lines_index[i] for i in range(len(lines_index)) for j in range(len(symbol))
+                              if lines_index[i][0] <= symbol[j] and lines_index[i][1] >= symbol[j]]
+        symbol_lines_index.append(lines_index[-1])
+
+        showMessage(symbol)
+        showMessage(line)
+        showMessage(lines_index)
+        showMessage(symbol_lines_index)
+        # now find all places with period
+        period = find(data, '。')
+
+        showMessage(period)
+
+        # initialize meaning
+        meaning = ''
+        # add to the meaning
+        for i in range(len(symbol)):
+            indStart = symbol[i]
+            indEnd = max([period[j] for j in range(len(period)) if (period[j] >= symbol_lines_index[i][1]
+                                                                    and period[j] < symbol_lines_index[i + 1][0]) or
+                          period[j] < symbol_lines_index[i][1]])
+
+            single_meaning = data[int(indStart + 1):indEnd + 1]
+            meaning += single_meaning
+
     # if 》string does not exist, then meaning is string after 】
     else:
-        indStart = data.find('】')
-        indEnd = data.find('】')
+        # find the line after 】
+        symbol = find(data, '】')
 
-    # slice that string
-    meaning = data[int(indStart+1):indEnd]
+        # initialize line
+        line = [0]
+        # find index of lines
+        lin = lines(data)
+
+        for i in lin:
+            line.append(i)
+
+        # subtract all numbers by 1
+        line = [int(num-1) for num in line]
+
+        # find which line symbol is in
+        # to do this, we will create a nested list, which will contain a tuple with starting and ending index
+        lines_index = [(line[i]+1,line[i+1]) for i in range(len(line)-1)]
+
+        # only keep the indices that is below the symbol
+        symbol_lines_index = [lines_index[i+1] for i in range(len(lines_index)) for j in range(len(symbol))
+                              if lines_index[i][0] <= symbol[j] and lines_index[i][1] >= symbol[j]]
+        symbol_lines_index.append(lines_index[-1])
+
+        showMessage(symbol)
+        showMessage(line)
+        showMessage(lines_index)
+        showMessage(symbol_lines_index)
+        # now find all places with period
+        period = find(data, '。')
+
+        showMessage(period)
+
+        # initialize meaning
+        meaning = ''
+        # add to the meaning
+        for i in range(len(symbol)):
+            indStart = symbol_lines_index[i][0]
+            indEnd = max([period[j] for j in range(len(period)) if (period[j] >= symbol_lines_index[i][1]
+                          and period[j] < symbol_lines_index[i+1][0]) or period[j] < symbol_lines_index[i][1]])
+
+
+            single_meaning = data[int(indStart + 1):indEnd+1]
+            meaning += single_meaning
+
 
     # remove new lines
     meaning = meaning.replace('\n', '')

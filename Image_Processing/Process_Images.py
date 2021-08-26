@@ -7,6 +7,7 @@ from Image_Processing.Write_Log import openLog, closeLog, writeLog, showMessage
 from typing import Tuple, List, Union
 import pytesseract
 import os
+from langdetect import detect
 
 def extractData() -> str:
     """
@@ -57,9 +58,10 @@ def extractData() -> str:
         # find meaning in image
         meaning = findMeaning(data)
         pronunciation = findPronunciation(data, word)
+        english = findEnglish(data, word)
 
         # determine if word is kanji or kotoba
-        if len(word) == 3:
+        if len(word) == 1:
             dict = {"漢字": word, "読み方": pronunciation}
         else:
             dict = {"言葉": word, "読み方": pronunciation}
@@ -68,6 +70,7 @@ def extractData() -> str:
         showMessage(word)
         showMessage(pronunciation)
         showMessage(meaning)
+        showMessage(english)
 
         showMessage('')
 
@@ -86,6 +89,35 @@ def lines(string:str) -> List[int]:
     """
     # find all index with new lines
     return find(string, '\n')
+
+def symbol_line_location(string:str, sym: str, move=0, addLast=False) -> List[Tuple[int, ...]]:
+    """
+    This function finds all lines where the symbol exists
+    """
+    # find the line after 】
+    symbol = find(string, sym)
+
+    # initialize line
+    line = [0]
+    # find index of lines
+    lin = lines(string)
+
+    for i in lin:
+        line.append(i)
+
+    # subtract all numbers by 1
+    line = [int(num - 1) for num in line]
+
+    # find which line symbol is in
+    # to do this, we will create a nested list, which will contain a tuple with starting and ending index
+    lines_index = [(line[i] + 1, line[i + 1]) for i in range(len(line) - 1)]
+
+    # only keep the indices that is below the symbol
+    symbol_lines_index = [lines_index[i+move] for i in range(len(lines_index)) for j in range(len(symbol))
+                          if lines_index[i][0] <= symbol[j] and lines_index[i][1] >= symbol[j]]
+    if addLast:
+        symbol_lines_index.append(lines_index[-1])
+    return symbol_lines_index
 
 def findWord(data: str) -> str:
     """
@@ -123,35 +155,12 @@ def findMeaning(data: str) -> str:
     # if 》string exists, then meaning is string after this string
     if data.find('》') != -1:
         # find the line after 》
+        sym = '》'
+        symbol_lines_index = symbol_line_location(data, sym, move=0, addLast=True)
         symbol = find(data, '》')
-        # initialize line
-        line = [0]
-        # find index of lines
-        lin = lines(data)
 
-        for i in lin:
-            line.append(i)
-
-        # subtract all numbers by 1
-        line = [int(num - 1) for num in line]
-
-        # find which line symbol is in
-        # to do this, we will create a nested list, which will contain a tuple with starting and ending index
-        lines_index = [(line[i] + 1, line[i + 1]) for i in range(len(line) - 1)]
-
-        # only keep the indices that is below the symbol
-        symbol_lines_index = [lines_index[i] for i in range(len(lines_index)) for j in range(len(symbol))
-                              if lines_index[i][0] <= symbol[j] and lines_index[i][1] >= symbol[j]]
-        symbol_lines_index.append(lines_index[-1])
-
-        showMessage(symbol)
-        showMessage(line)
-        showMessage(lines_index)
-        showMessage(symbol_lines_index)
         # now find all places with period
         period = find(data, '。')
-
-        showMessage(period)
 
         # initialize meaning
         meaning = ''
@@ -168,36 +177,13 @@ def findMeaning(data: str) -> str:
     # if 》string does not exist, then meaning is string after 】
     else:
         # find the line after 】
+        sym = '】'
+        symbol_lines_index = symbol_line_location(data, sym, move=1, addLast=True)
+
         symbol = find(data, '】')
 
-        # initialize line
-        line = [0]
-        # find index of lines
-        lin = lines(data)
-
-        for i in lin:
-            line.append(i)
-
-        # subtract all numbers by 1
-        line = [int(num-1) for num in line]
-
-        # find which line symbol is in
-        # to do this, we will create a nested list, which will contain a tuple with starting and ending index
-        lines_index = [(line[i]+1,line[i+1]) for i in range(len(line)-1)]
-
-        # only keep the indices that is below the symbol
-        symbol_lines_index = [lines_index[i+1] for i in range(len(lines_index)) for j in range(len(symbol))
-                              if lines_index[i][0] <= symbol[j] and lines_index[i][1] >= symbol[j]]
-        symbol_lines_index.append(lines_index[-1])
-
-        showMessage(symbol)
-        showMessage(line)
-        showMessage(lines_index)
-        showMessage(symbol_lines_index)
         # now find all places with period
         period = find(data, '。')
-
-        showMessage(period)
 
         # initialize meaning
         meaning = ''
@@ -211,6 +197,11 @@ def findMeaning(data: str) -> str:
             single_meaning = data[int(indStart + 1):indEnd+1]
             meaning += single_meaning
 
+    # showMessage(symbol)
+    # showMessage(line)
+    # showMessage(lines_index)
+    # showMessage(symbol_lines_index)
+    # showMessage(period)
 
     # remove new lines
     meaning = meaning.replace('\n', '')
@@ -289,15 +280,53 @@ def findPronunciation(data: str, word: str) -> str:
         pronunciation = f"[音] {onyomi}\n[訓] {kunyomi}"
 
 
-
-
-
     return pronunciation
 
 def findEnglish(data: str, word: str) -> str:
     """
     This function finds the english translation in the data
     """
+    # remove all string leading up to the word Translate
+    data = data[data.find('Translate'):len(data)]
+    # initalize list
+    english_list = []
+
+    # find all english in the string
+    number_list = [int(num) for num in data if num.isnumeric()]
+
+    # remove 4
+    number_list.remove(4)
+
+    # find smallest and largest numbers
+    small = min(number_list)
+    large = max(number_list)
+
+    # first find the string with number
+    for i in range(small,large+1):
+        # find the line after i
+        sym = f"{i}"
+        symbol_lines_index = symbol_line_location(data, sym, move=0, addLast=False)
+
+        # find index for that specific number
+        eng = find(data, f"{i}")
+
+        # for each location, determine if the 2 higher index is an alphabet or not
+        for j in range(len(eng)):
+            # if it is, then take that line
+            if data[eng[j]+3].isalpha():
+                indStart = eng[j]+3
+                indEnd = symbol_lines_index[j][1]
+
+                english = data[indStart:indEnd+1]
+                english_list.append(english)
+
+    # lastly combine the words, separating each translation with /
+    english = " / ".join(english_list)
+
+    return english
+
+
+
 
 
 # class ImageProcess:

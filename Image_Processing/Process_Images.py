@@ -7,9 +7,10 @@ from Image_Processing.Write_Log import openLog, closeLog, writeLog, showMessage
 from typing import Tuple, List, Union, Dict
 import pytesseract
 import os
-from langdetect import detect
+import pandas as pd
+import csv
 
-def writeFile():
+def writeFile(shorten=True):
     """
     This function writes the extracted data from images into a file
     """
@@ -23,14 +24,24 @@ def writeFile():
     if not os.path.exists("Image_Processing/Data"):
         os.mkdir("Image_Processing/Data")
 
-    global picFolder
-    picFolder = "Image_Processing/Data/{}_{}".format(day, current_time)
+    # global picFolder
+    # picFolder = "Image_Processing/Data/{}_{}".format(day, current_time)
+    #
+    # if not os.path.exists(picFolder):
+    #     os.mkdir(picFolder)
 
-    if not os.path.exists(picFolder):
-        os.mkdir(picFolder)
+    # create a csv file if already doesn't exist
+    if not os.path.exists("Image_Processing/Data/Data.csv"):
+        openLog(f'Image_Processing/Data/Data.csv')
 
-    # create a text file
-    openLog(f'Image_Processing/Data/{day}_{current_time}/Data.txt')
+        # csv header
+        fieldnames = ["漢字", "言葉", "読み方 (音|訓)", "英語", "意味", "例文"]
+
+        with open('Image_Processing/Data/Data.csv', 'w', encoding='UTF8', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+
+    # openLog(f'Image_Processing/Data/{day}_{current_time}/Data.csv')
 
     # find the file name for all images needed for extracting data
     image = os.listdir("Image_Processing/Images/")
@@ -39,19 +50,62 @@ def writeFile():
     if '.DS_Store' in image:
         image.remove('.DS_Store')
 
+    # initialize df
+    df = pd.read_csv("Image_Processing/Data/Data.csv")
     # extract data for each image
     for i in range(len(image)):
+        # initialize list
+        list_data = []
+
         # find the image folder
         image_path = f"Image_Processing/Images/{image[i]}"
 
         # extract data
-        data = extractData(image_path)
+        data = extractData(image_path, shorten).items()
 
-        # write data into file
-        writeLog(data)
+        # append it to list
+        data = [string[1] for string in data]
+
+        # if kanji, then second should be blank, else the first should be blank
+        if len(data[0]) == 1:
+            data.insert(1, '')
+        else:
+            data.insert(0, '')
+
+        # showMessage(data)
+
+        df2 = pd.DataFrame([data], columns=["漢字", "言葉", "読み方 (音|訓)", "英語", "意味", "例文"], index=[i+0.5])
+        df = df.append(df2, ignore_index=False)
+        df = df.sort_index().reset_index(drop=True)
+
+        df.drop(df.columns[df.columns.str.contains('unnamed', case=False)], axis=1, inplace=True)
+
+        df.to_csv("Image_Processing/Data/Data.csv")
+
+        # now move the image from images to used_images
 
 
-def extractData(image_path: str) -> Dict[str, str]:
+
+
+        # df2 = pd.DataFrame(ls, columns=["漢字", "言葉", "読み方 (音|訓)", "英語", "意味", "例文"], index=[nindx])
+
+        # # write data into file
+        # writeLog(data)
+
+        # write data into list
+        list_data.append(data)
+
+    # # csv header
+    # fieldnames = ["", "漢字", "言葉", "読み方 (音|訓)", "英語", "意味", "例文"]
+    #
+    # with open(f'Image_Processing/Data/{day}_{current_time}/Data.csv', 'w', newline='') as f:
+    #     writer = csv.DictWriter(f, fieldnames=fieldnames)
+    #     writer.writeheader()
+    #     writer.writerows(list_data)
+
+
+
+def extractData(image_path: str, shorten: bool) -> Dict[str, str]:
     """
     This function extracts the data from images
     returns the name for data file and dictionary containing all the information necessary
@@ -70,7 +124,7 @@ def extractData(image_path: str) -> Dict[str, str]:
     # find the word in image
     word = findWord(data)
     # find meaning in image
-    meaning = findMeaning(data)
+    meaning = findMeaning(data, shorten)
     # find pronunciation in image
     pronunciation = findPronunciation(data, word)
     # find english translation in image
@@ -80,18 +134,17 @@ def extractData(image_path: str) -> Dict[str, str]:
 
     # determine if word is kanji or kotoba, then append it to dictionary
     if len(word) == 1:
-        dict = {"漢字": word, "読み方 (音|訓)": pronunciation, "英語": english, "意味": meaning, "例文": example}
+        dict = {"漢字": word,
+                "読み方 (音|訓)": pronunciation,
+                "英語": english,
+                "意味": meaning,
+                "例文": example}
     else:
-        dict = {"言葉": word, "読み方 (音|訓)": pronunciation, "英語": english, "意味": meaning, "例文": example}
-
-    # showMessage(data)
-    # showMessage(word)
-    # showMessage(pronunciation)
-    # showMessage(meaning)
-    # showMessage(english)
-    # showMessage(example)
-
-    # showMessage('')
+        dict = {"言葉": word,
+                "読み方 (音|訓)": pronunciation,
+                "英語": english,
+                "意味": meaning,
+                "例文": example}
 
     # finally, return the information
     return dict
@@ -163,7 +216,7 @@ def findWord(data: str) -> str:
     word = word.replace(" ", "")
     return word
 
-def findMeaning(data: str) -> str:
+def findMeaning(data: str, shorten: bool) -> str:
     """
     This function finds the meaning in the data
     """
@@ -227,6 +280,13 @@ def findMeaning(data: str) -> str:
 
     # lastly, get rid of spaces
     meaning = meaning.replace(" ", "")
+
+    # if we want to shorten, we will only take the first sentence
+    if shorten:
+        # find period
+        period = find(meaning, '。')
+        # take the first period
+        meaning = meaning[0:period[0]]
     return meaning
 
 def findPronunciation(data: str, word: str) -> str:
@@ -364,6 +424,7 @@ def findExample(data: str, word: str) -> str:
         example = example.replace(' ', '')
         # remove new lines
         example = example.replace('\n', '')
+
         if '一' in example or word in example:
             example_list.append(example)
 

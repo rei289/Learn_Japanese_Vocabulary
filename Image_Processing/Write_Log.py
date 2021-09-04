@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict, IO, List
 import time
+import csv
 
 def openLog(log_name) -> None:
     """
@@ -45,9 +46,12 @@ def writeLog(message) -> None:
     #
     # info = "Time: {}, {}\n".format(current_time, message)
 
-    # replace , with new line
-    message = str(message).replace(',', ', \n')
-    info = f"{message} \n \n"
+    # # replace , with new line
+    # message = str(message).replace(',', ', \n')
+    # info = f"{message} \n \n"
+
+    info = f"{message} \n"
+
 
 
     log.write(info)

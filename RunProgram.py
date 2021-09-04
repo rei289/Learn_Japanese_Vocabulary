@@ -9,15 +9,19 @@ def runProgram():
     """
     This function runs the whole program
     """
-    # if we are going to use image processing or runApp, set them to true or false respectively
+    # if we are going to use image processing, adding data from image processing, runApp, set them to true or false respectively
     application = False
     imageProcessing = True
+    addProcessedData = False
 
     if application:
         runApp()
 
     if imageProcessing:
         runImageProcessing()
+
+    if addProcessedData:
+        runAddData()
 
 def runApp():
     """
@@ -32,8 +36,12 @@ def runImageProcessing():
     """
     # initialize instance
     extract = writeFile()
-    # image = ImageProcess
-    # extract = ImageProcess.extractData(image)
+
+def runAddData():
+    """
+    This function adds all the data from image processing into the csv file
+    """
+    pass
 
 if __name__ == '__main__':
     runProgram()
